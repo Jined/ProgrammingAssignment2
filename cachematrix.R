@@ -19,8 +19,8 @@ makeCacheMatrix <- function(special_matrix = matrix()) {
         inverse_special_matrix <- NULL
         
         # initialize the value of the special matrix by creating a function
-        # named "setspecialmatrix" that will store the studied matrix (the one we
-        # are interested in) in the special matrix. The special matrix plays the
+        # named "setSpecialMatrix" that will store the studied matrix (the one we
+        # are interested in) in the "special matrix". The special matrix plays the
         # role of a container (named "special_matrix") and this container will 
         # contain the studied matrix (named "studied_matrix" in what follows).
         # This is also the case with the inverse_special_matrix object. We need to
@@ -29,44 +29,44 @@ makeCacheMatrix <- function(special_matrix = matrix()) {
         # instance, assume A is the first studied matrix, then letting Inv_A denotes
         # its inverse, we would have special_matrix == A and
         # inverse_special_matrix == Inv_A. Assume now that we are interested in
-        # another matrix B, if the "set" function does not
-        # (re)initialize the value of inverse_special_matrix, then we would have
+        # another matrix B, if the "set" function does not (re)initialize the value
+        # of inverse_special_matrix, then we would have
         # special_matrix == B and inverse_special_matrix == Inv_A (which is
         # problematic) instead of inverse_special_matrix == NULL (which is not
         # problematic).
-        setspecialmatrix <- function(studied_matrix) {
+        setSpecialMatrix <- function(studied_matrix) {
                 special_matrix <<- studied_matrix
                 inverse_special_matrix <<- NULL
         }
         
-        # the function below, named "getspecialmatrix", is used to retrieve the
+        # the function below, named "getSpecialMatrix", is used to retrieve the
         # value of special_matrix which is the studied matrix thanks to the function
-        # "setspecialmatrix" above. The "getspecialmatrix" function has no arguments,
+        # "setSpecialMatrix" above. The "getSpecialMatrix" function has no arguments,
         # because it does no actions or computations. Another name could have been
-        # "fetchspecialmatrix".
-        getspecialmatrix <- function() {
+        # "fetchSpecialMatrix".
+        getSpecialMatrix <- function() {
                 special_matrix
         }
         
-        # the function below, named "setinversespecialmatrix", will "store" or
+        # the function below, named "setInverseSpecialMatrix", will "store" or
         # "cache" the value of the inverse of the studied matrix (named
         # inverse_studied_matrix) by assigning its value to inverse_special_matrix
-        setinversespecialmatrix <- function(inverse_studied_matrix) {
+        setInverseSpecialMatrix <- function(inverse_studied_matrix) {
                 inverse_special_matrix <<- inverse_studied_matrix
         }
         
-        # the function below, named "getinversespecialmatrix", is used to retrieve
+        # the function below, named "getInverseSpecialMatrix", is used to retrieve
         # the value of inverse_special_matrix which has been set to (or is equal to)
-        # inverse_studied_matrix by the function "setinversespecialmatrix"
-        getinversespecialmatrix <- function() {
+        # inverse_studied_matrix by the function "setInverseSpecialMatrix"
+        getInverseSpecialMatrix <- function() {
                 inverse_special_matrix
         }
         
         # make a list containing the values given by the functions defined above
-        list(set = setspecialmatrix,
-             get = getspecialmatrix,
-             setinverse = setinversespecialmatrix
-             getinverse = getinversespecialmatrix)
+        list(set = setSpecialMatrix,
+             get = getSpecialMatrix,
+             setinverse = setInverseSpecialMatrix
+             getinverse = getInverseSpecialMatrix)
 }
 
 
@@ -79,5 +79,34 @@ makeCacheMatrix <- function(special_matrix = matrix()) {
 # it a second time.
 
 cacheSolve <- function(studied_matrix, ...) {
-        ## Return a matrix that is the inverse of "studied_matrix"
+        # we pull from the result of the makeCacheMatrix function the value of
+        # the inverse of the studied matrix
+        inverse_studied_matrix <- studied_matrix$getinverse()
+        
+        # to see if the inverse of the studied matrix has already been computed
+        # we test the value of inverse_studied_matrix. If it is "NULL", then we
+        # know the inverse of the studied matrix has not been already computed
+        if (!is.null(inverse_studied_matrix)) {
+                message("getting inverse of the matrix from cached data")
+                return(inverse_studied_matrix)
+        }
+        
+        # in what follows, we are in the case when the inverse of the studied has
+        # not been already computed (the above if statement failed). We first need
+        # to get the studied matrix whose value is stored in special_matrix which
+        # we will now retrieve
+        temp_studied_matrix <- studied_matrix$get()
+        
+        # now that we have retrieved our special matrix, we compute its inverse
+        inverse_studied_matrix <- solve(temp_studied_matrix)
+        
+        # having computed the inverse of the studied matrix, we cache its value
+        # for future use by using the function "setInverseSpecialMatrix" through
+        # its label in the result or output (which is a list) of the function
+        # "makeCacheMatrix"
+        studied_matrix$setinverse(inverse_studied_matrix)
+        
+        # having cached the value of the inverse of the studied matrix, this value
+        # becomes the result or the output of the function "cacheSolve"
+        inverse_studied_matrix
 }
